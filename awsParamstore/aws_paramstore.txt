@@ -1,0 +1,117 @@
+Aws paramstore
+
+AWS Systems Manager Parameter Store is an AWS service used to securely store and manage configuration values, parameters, and secrets used by applications.
+
+Common Uses
+Database connection settings
+API URLs
+Application configuration
+Environment variables
+Passwords and API keys
+Feature flags
+Basic Example
+
+Instead of putting a database password directly in application code:
+
+DB_PASSWORD = "MyPassword123"
+
+Store it in Parameter Store:
+
+/database/password
+        ↓
+   Parameter Store
+        ↓
+   SecureString
+
+The application retrieves the value when required.
+
+Steps to Configure Parameter Store
+Login to the AWS Management Console.
+Search for Systems Manager.
+Open AWS Systems Manager.
+From the left menu, select Parameter Store.
+Click Create parameter.
+
+Enter a parameter name, for example:
+
+/myapp/database/username
+Enter a description.
+Select the parameter type:
+String – normal text
+StringList – comma-separated values
+SecureString – encrypted sensitive information
+Enter the parameter value.
+For SecureString, select the required KMS key or use the AWS-managed key.
+Add tags if required.
+Click Create parameter.
+Open the parameter to verify its details.
+Use Get parameter to retrieve its value.
+Give your application/IAM user the required permission to access the parameter.
+Example Parameters
+/myapp/database/host
+/myapp/database/username
+/myapp/database/password
+/myapp/api/url
+/myapp/environment
+AWS CLI Example
+
+Create a parameter:
+
+aws ssm put-parameter \
+  --name "/myapp/environment" \
+  --value "production" \
+  --type "String"
+
+Create a secure parameter:
+
+aws ssm put-parameter \
+  --name "/myapp/database/password" \
+  --value "MyPassword123" \
+  --type "SecureString"
+
+Retrieve a parameter:
+
+aws ssm get-parameter \
+  --name "/myapp/environment"
+
+Retrieve a secure parameter:
+
+aws ssm get-parameter \
+  --name "/myapp/database/password" \
+  --with-decryption
+
+In short:
+Parameter Store = centralized place in AWS to store application configuration and sensitive values, with IAM-controlled access.
+
+Continue with Parameter Store
+
+
+CODE:-
+import boto3
+
+# Connect to AWS Systems Manager
+ssm = boto3.client("ssm", region_name="ap-south-1")
+
+# Parameter details
+# parameter_name = "/myapp/database/username"
+# parameter_value = "admin123"
+
+# # Create parameter
+# response = ssm.put_parameter(
+#     Name=parameter_name,
+#     Value=parameter_value,
+#     Type="String",
+#     Overwrite=True
+# )
+
+# print("Parameter created successfully!")
+# print("Parameter Name:", parameter_name)
+
+# Retrieve parameter
+response = ssm.get_parameter(
+    Name="/myapp/database/username"
+)
+
+value = response["Parameter"]["Value"]
+
+print("Retrieved Value:", value)
