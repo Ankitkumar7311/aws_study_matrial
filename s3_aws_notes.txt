@@ -1,0 +1,165 @@
+s3 - simple storage system
+ amazon S3 (Simple Storage Service) is an AWS cloud service used to store and retrieve data/files over the internet.
+Think of S3 as a cloud storage system, similar to Google Drive, but designed mainly for applications, websites, backups, data lakes, and large-scale storage.
+   
+   Note -  you have to download aws sdk ex - boto3 (aws sdk python)
+
+1. Basic Structure
+AWS Account
+    │
+    └── S3
+         │
+         └── Bucket
+              │
+              ├── file1.jpg
+              ├── document.pdf
+              ├── video.mp4
+              └── data.csv
+
+
+              | Term               | Meaning                                | Example                |
+| ------------------ | -------------------------------------- | ---------------------- |
+| Bucket         | Container used to store files          | `college-data`         |
+| Object        | A file stored in S3                    | `student.pdf`          |
+| Object Key     | Unique name/path of an object          | `notes/dbms/unit1.pdf` |
+| Region         | AWS geographical location              | Mumbai (`ap-south-1`)  |
+| Storage Class  | Determines storage cost/access pattern | S3 Standard            |
+| Versioning     | Keeps multiple versions of an object   | v1, v2, v3             |
+| Lifecycle Rule | Automatically moves/deletes objects    | Standard → Glacier     |
+| Access Policy  | Controls who can access data           | IAM/Bucket Policy      |
+
+
+
+3. Example
+
+Suppose your college wants to store student documents.
+
+You create a bucket:
+
+college-student-documents
+
+Inside it:
+
+college-student-documents/
+│
+├── students/
+│   ├── 101/
+│   │   ├── photo.jpg
+│   │   └── marksheet.pdf
+│   │
+│   └── 102/
+│       ├── photo.jpg
+│       └── marksheet.pdf
+│
+└── notices/
+    ├── exam-notice.pdf
+    └── timetable.pdf
+
+Here:
+
+college-student-documents → Bucket
+marksheet.pdf → Object
+students/101/marksheet.pdf → Object key/path
+
+
+
+
+
+
+## AWS S3 Configuration Steps
+
+1. Login to **AWS Management Console**.
+2. Search and open **S3**.
+3. Click **Create bucket**.
+4. Enter a **unique Bucket Name**.
+5. Select the required **AWS Region**.
+6. Under **Object Ownership**, keep **ACLs disabled** (recommended).
+7. Under **Block Public Access**, keep **Block all public access enabled** for a normal/private bucket.
+8. Enable **Bucket Versioning** if required.
+9. Under **Default Encryption**, keep **Server-side encryption** enabled.
+10. Select **SSE-S3** for a basic practical.
+11. Leave other settings at their default values.
+12. Click **Create bucket**.
+13. Open the created bucket.
+14. Click **Upload → Add files**.
+15. Select the required file.
+16. Click **Upload**.
+17. Verify that the file appears as an **S3 Object**.
+18. Open the object and check its **Properties**.
+19. Test **Download** to verify access.
+20. Configure **Bucket Policy/IAM permissions** only if specific users or applications need controlled access.
+
+### Basic Configuration
+
+| Setting          | Recommended for Lab     |
+| ---------------- | ----------------------- |
+| Bucket Name      | Unique name             |
+| Region           | `ap-south-1` (Mumbai)   |
+| Object Ownership | ACLs disabled           |
+| Public Access    | Block all public access |
+| Versioning       | Enable if required      |
+| Encryption       | SSE-S3                  |
+| Storage Class    | S3 Standard             |
+| Access           | Private by default      |
+
+Available next action: Create a downloadable DOCX file here in this chat containing the editable prose above
+
+
+
+CODE IN PYTHON TO INTERACT WITH TERMINAL
+import boto3
+
+s3 = boto3.resource('s3')
+
+
+# 1. LIST ALL BUCKETS
+# print("Existing Buckets:")
+
+# for bucket in s3.buckets.all():
+#     print(bucket.name)
+
+
+# # 2. CREATE BUCKET
+# bucket_name = "my-boto3-test-bucket-123456789"
+
+# s3.create_bucket(
+#     Bucket=bucket_name,
+#     CreateBucketConfiguration={
+#         'LocationConstraint': 'ap-south-1'
+#     }
+# )
+
+# print("\nBucket created:", bucket_name)
+
+
+# 3. UPLOAD FILE TO BUCKET
+# file_name = "test.txt"
+
+# s3.Bucket("my-boto3-test-bucket-123456789").upload_file(
+#      "app.py",
+#     "test.txt"
+# )
+
+# print("File uploaded successfully")
+
+
+# # 4. DOWNLOAD FILE FROM BUCKET
+# s3.Bucket(bucket_name).download_file(
+#     "test.txt",
+#     "downloaded_test.txt"
+# )
+
+# print("File downloaded successfully")
+
+
+# # 5. DELETE FILE FROM BUCKET
+# s3.Object(bucket_name, "test.txt").delete()
+
+# print("File deleted successfully")
+
+
+# 6. DELETE BUCKET note-first we have to delete file from bucket because we can delete only empty file bucket
+
+s3.Bucket("my-boto3-test-bucket-123456789").delete()
+
+print("Bucket deleted successfully")
