@@ -1,0 +1,199 @@
+EC2 -> Elastic Cloud Compute - a virtual server 
+Amazon EC2 (Elastic Compute Cloud) is an AWS service that provides virtual servers (instances) in the cloud.
+
+You can use an EC2 instance to run:
+
+Python programs
+Websites
+Web servers
+Databases
+Applications
+Linux/Windows operating systems
+Basic EC2 Practical Steps
+Login to the AWS Management Console.
+Search for EC2.
+Open Amazon EC2.
+Select the required AWS Region.
+Click Launch Instance.
+Enter an Instance Name, e.g. My-First-EC2.
+Select an AMI (Amazon Machine Image), such as Amazon Linux or Ubuntu.
+Select an appropriate Instance Type, e.g. t3.micro if suitable for your account.
+Create or select a Key Pair for secure login.
+Configure the Network/VPC settings.
+Configure the Security Group.
+Allow SSH (port 22) for Linux if remote SSH access is required.
+Allow HTTP (port 80) if you want to run a web server.
+Configure the required storage.
+Review the configuration.
+Click Launch Instance.
+Go to EC2 → Instances.
+Select your instance and check its status.
+Wait until Instance state = Running and status checks pass.
+Connect to the instance using Connect → SSH client or the appropriate connection method.
+Install and run your required application.
+When the practical is complete, Stop or Terminate the instance as appropriate to avoid unnecessary charges.
+
+
+
+
+            AWS Console
+                 ↓
+                EC2
+                 ↓
+            Launch Instance
+                 ↓
+            Select AMI
+                 ↓
+            Select Instance Type
+                 ↓
+            Create/Select Key Pair
+                 ↓
+            Configure Security Group
+                 ↓
+            Configure Storage
+                 ↓
+            Launch
+                 ↓
+            Connect to EC2
+                 ↓
+            Run Application
+
+
+
+
+
+            Step-by-Step Procedure to Connect to a Linux EC2 Instance Using SSH
+1. Launch a Linux EC2 Instance
+Login to the AWS Management Console.
+Search for EC2 and open the EC2 Dashboard.
+Select the required AWS Region.
+Click Launch instance.
+
+Enter an instance name, for example:
+
+Linux-Server
+Select a Linux AMI such as Amazon Linux or Ubuntu.
+Select an appropriate instance type.
+Create a new Key Pair or select an existing one.
+Download the .pem key file and keep it secure.
+2. Configure Security Group
+In Network settings, create or select a security group.
+Add an inbound rule:
+Type: SSH
+Protocol: TCP
+Port: 22
+Source: Your IP address is preferable for security.
+Launch the instance.
+3. Get the Public IP Address
+Go to EC2 → Instances.
+Select your running instance.
+Copy its Public IPv4 address.
+
+Example:
+
+13.234.56.78
+4. Open a Terminal
+
+On Linux/macOS, open Terminal.
+
+On Windows, you can use PowerShell, Windows Terminal, or an SSH client that supports OpenSSH.
+
+5. Set Key Permissions
+
+On Linux/macOS, go to the directory containing your .pem file:
+
+cd Downloads
+
+Then run:
+
+chmod 400 my-key.pem
+
+This protects the private key from being accessed by other users.
+
+6. Connect Using SSH
+
+For an Amazon Linux instance:
+
+ssh -i "my-key.pem" ec2-user@13.234.56.78
+
+For an Ubuntu instance:
+
+ssh -i "my-key.pem" ubuntu@13.234.56.78
+
+Replace:
+
+my-key.pem
+
+with your actual key filename and:
+
+13.234.56.78
+
+with your EC2 instance's public IPv4 address.
+
+7. Confirm the Connection
+
+The first time you connect, SSH may ask:
+
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+
+Type:
+
+yes
+
+If the connection succeeds, you will see a Linux shell similar to:
+
+[ec2-user@ip-172-31-xx-xx ~]$
+
+You are now connected to your Linux EC2 instance through SSH.
+
+8. Test the Server
+
+Run:
+
+whoami
+
+Then:
+
+uname -a
+
+You can also check the operating system:
+
+cat /etc/os-release
+9. Exit the EC2 Instance
+
+When finished:
+
+exit
+
+The SSH connection will close.
+
+Complete Flow
+AWS Console
+     ↓
+EC2
+     ↓
+Launch Linux Instance
+     ↓
+Create/Download Key Pair (.pem)
+     ↓
+Configure Security Group
+     ↓
+Allow SSH (Port 22)
+     ↓
+Launch Instance
+     ↓
+Copy Public IPv4 Address
+     ↓
+Open Terminal
+     ↓
+chmod 400 key.pem
+     ↓
+ssh -i key.pem ec2-user@PUBLIC-IP
+     ↓
+Connected to Linux EC2
+     ↓
+Run Linux Commands
+     ↓
+exit
+
+Important: Never share your .pem private key. For a real deployment, restrict SSH access to your own IP rather than allowing 0.0.0.0/0.
