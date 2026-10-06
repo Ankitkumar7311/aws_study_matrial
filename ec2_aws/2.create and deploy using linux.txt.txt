@@ -1,0 +1,214 @@
+ Here is a clean, notes-ready step-by-step process for AWS EC2 Instance Creation + HTML Deployment.
+
+AWS EC2: Create Instance & Deploy HTML Website
+1. Create EC2 Instance
+Open AWS Console
+Search EC2.
+Click EC2 → Instances.
+Click Launch instances.
+Enter:
+Name: My-Web-Server
+AMI: Ubuntu
+Instance type: t2.micro or eligible Free Tier option
+Key pair: Create/select a key pair, e.g. sample2
+Download the .pem file and keep it safe.
+Under Network settings, allow:
+SSH – Port 22
+HTTP – Port 80 if you plan to use a normal web server
+For the Python practice server used in this exercise, Custom TCP – Port 8000
+Click Launch instance.
+2. Get Public IP
+
+After the instance starts:
+
+EC2 → Instances → Select your instance
+
+Copy:
+
+Public IPv4 address
+
+Example:
+
+43.204.221.43
+3. Connect Using MobaXterm
+
+Open MobaXterm.
+
+Create SSH Session
+Session → SSH
+
+Enter:
+
+Remote host: 43.204.221.43
+Port: 22
+Username: ubuntu
+
+Enable:
+
+Specify username: ubuntu
+Use private key: sample2.pem
+
+Select your .pem file.
+
+Click OK/Connect.
+
+You should see:
+
+ubuntu@ip-172-31-xx-xxx:~$
+4. Create Destination Folder
+
+On EC2:
+
+mkdir -p ~/demoo
+
+Check:
+
+ls
+
+You should see:
+
+demoo
+5. Create HTML Project on Local Computer
+
+Suppose your local folder is:
+
+Desktop/ec2
+
+and contains:
+
+ec2/
+└── index.html
+
+Example index.html:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My EC2 Website</title>
+</head>
+<body>
+    <h1>Hello from AWS EC2!</h1>
+    <p>My website is deployed on an EC2 instance.</p>
+</body>
+</html>
+6. Copy Project to EC2 Using SCP
+
+Open MobaXterm Local Terminal.
+
+Your .pem file is:
+
+C:\Users\kumar\Downloads\sample2.pem
+
+Your project folder is:
+
+Desktop/ec2
+
+In MobaXterm, use:
+
+scp -i "/drives/c/Users/kumar/Downloads/sample2.pem" -r "/home/mobaxterm/desktop/ec2" ubuntu@43.204.221.43:/home/ubuntu/demoo/
+Meaning
+scp        → Secure Copy
+-i         → Identity/private key
+-r         → Copy directory recursively
+ec2        → Local project folder
+ubuntu@IP  → Remote EC2 user and server
+demoo      → Destination folder
+7. Verify the Files on EC2
+
+Go back to your EC2 terminal:
+
+cd ~/demoo
+
+Check:
+
+ls
+
+You should see:
+
+ec2
+
+Then:
+
+cd ~/demoo/ec2
+ls
+
+Expected:
+
+index.html
+8. Start Web Server
+
+For practice/testing, use Python's built-in HTTP server:
+
+python3 -m http.server 8000 --bind 0.0.0.0
+
+You should see:
+
+Serving HTTP on 0.0.0.0 port 8000
+9. Allow Port 8000 in AWS
+
+Go to:
+
+EC2 → Security Groups → Your Security Group → Inbound rules → Edit inbound rules
+
+Click:
+
+Add rule
+
+Set:
+
+Type:        Custom TCP
+Port range:  8000
+Source:      Anywhere-IPv4
+
+Which results in:
+
+0.0.0.0/0
+
+Click:
+
+Save rules
+
+10. Open Website
+
+Open your browser:
+
+http://YOUR_PUBLIC_IP:8000
+
+Example:
+
+http://43.204.221.43:8000
+
+Your index.html should open. 🎉
+
+Complete Command Summary
+EC2
+mkdir -p ~/demoo
+Local MobaXterm terminal
+scp -i "/drives/c/Users/kumar/Downloads/sample2.pem" -r "/home/mobaxterm/desktop/ec2" ubuntu@43.204.221.43:/home/ubuntu/demoo/
+EC2
+cd ~/demoo/ec2
+ls
+python3 -m http.server 8000 --bind 0.0.0.0
+Browser
+http://43.204.221.43:8000
+Deployment Flow
+Local Computer
+      │
+      │  SCP
+      ▼
+   AWS EC2
+      │
+      ▼
+ ~/demoo/ec2
+      │
+      │ Python HTTP Server
+      ▼
+   Port 8000
+      │
+      ▼
+   Internet
+      │
+      ▼
+Browser
+
+Note: This Python server is suitable for learning/testing. For a proper production deployment, the next step would be Nginx + port 80/HTTPS + domain name.

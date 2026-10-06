@@ -1,0 +1,94 @@
+EC2 + Nginx Reverse Proxy — Steps Only
+Step 1: SSH into EC2
+ssh -i "your-key.pem" ubuntu@YOUR_PUBLIC_IP
+Step 2: Check Linux server
+whoami
+hostname -I
+Step 3: Update packages
+sudo apt update
+Step 4: Install Nginx
+sudo apt install nginx -y
+Step 5: Check Nginx
+sudo systemctl status nginx
+Step 6: Check your index.html
+cd /var/www/html
+ls
+
+Make sure:
+
+index.html
+
+is present.
+
+Step 7: Run index.html using Python server
+python3 -m http.server 8000
+
+Keep this terminal running.
+
+Step 8: Open another SSH/MobaXterm terminal
+
+Test the backend:
+
+curl http://localhost:8000
+Step 9: Open Nginx default configuration
+sudo vim /etc/nginx/sites-available/default
+Step 10: Replace the configuration with
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        root /var/www/html;
+
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location / {
+                proxy_pass http://127.0.0.1:8000;
+
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }
+}
+Step 11: Save Vim file
+Esc
+:wq
+Enter
+Step 12: Test Nginx configuration
+sudo nginx -t
+
+Expected:
+
+syntax is ok
+test is successful
+Step 13: Restart Nginx
+sudo systemctl restart nginx
+Step 14: Enable Nginx
+sudo systemctl enable nginx
+Step 15: Allow Port 80 in AWS
+
+EC2 → Security Groups → Inbound Rules → Add:
+
+Type: HTTP
+Port: 80
+Source: 0.0.0.0/0
+Step 16: Open browser
+http://YOUR_EC2_PUBLIC_IP
+
+Do not use :8000.
+
+Final flow:
+
+Browser
+   ↓
+EC2 :80
+   ↓
+Nginx
+   ↓
+127.0.0.1:8000
+   ↓
+Python Server
+   ↓
+index.html

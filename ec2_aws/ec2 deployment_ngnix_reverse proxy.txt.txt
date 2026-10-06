@@ -1,0 +1,1028 @@
+Absolutely. Below is a beginner-friendly, detailed set of notes covering EC2 Networking → Linux networking basics → Nginx installation → Web Server → Reverse Proxy → Practical implementation with index.html, including commands, examples, and the exact flow you followed.
+
+EC2 Networking + Nginx + Reverse Proxy
+Beginner-Friendly Practical Notes
+1. What is AWS EC2?
+
+EC2 = Elastic Compute Cloud
+
+EC2 provides a virtual server (computer) in the AWS Cloud.
+
+You can use an EC2 server to:
+
+Host websites
+Run Java/Python/Node.js applications
+Install Linux software
+Deploy applications
+Run databases
+Configure web servers
+Practice networking and DevOps
+
+Example:
+
+Your Laptop
+     |
+     | Internet
+     ↓
+AWS
+     |
+     ↓
+EC2 Instance
+     |
+     ↓
+Ubuntu Linux
+2. Important EC2 Networking Components
+
+When you create an EC2 instance, several networking components are involved.
+
+                    AWS
+                     |
+                  Region
+                     |
+                    VPC
+                     |
+                Subnet
+                     |
+              EC2 Instance
+                     |
+              Network Interface
+                     |
+              Private IP
+                     |
+              Public IP
+
+Let's understand each one.
+
+3. VPC
+VPC = Virtual Private Cloud
+
+A VPC is your private network inside AWS.
+
+Think of it like your own network in the AWS cloud.
+
+Example:
+
+AWS Cloud
+└── VPC
+    ├── Subnet 1
+    │   ├── EC2
+    │   └── EC2
+    │
+    └── Subnet 2
+        ├── EC2
+        └── EC2
+
+Example VPC CIDR:
+
+10.0.0.0/16
+
+This means the VPC has a large private IP address range.
+
+4. Subnet
+
+A subnet is a smaller network inside a VPC.
+
+Example:
+
+VPC
+10.0.0.0/16
+
+        |
+        +---- Public Subnet
+        |     10.0.1.0/24
+        |
+        +---- Private Subnet
+              10.0.2.0/24
+
+EC2 instances are launched inside subnets.
+
+Public Subnet
+
+Usually used for resources that need internet connectivity.
+
+Example:
+
+Internet
+   ↓
+Internet Gateway
+   ↓
+Public Subnet
+   ↓
+EC2
+Private Subnet
+
+Usually used for resources that should not be directly accessible from the internet.
+
+Example:
+
+EC2 Application
+      ↓
+Private Subnet
+      ↓
+Database
+5. IP Addresses in EC2
+
+An EC2 instance can have different types of IP addresses.
+
+Private IP
+
+Used for communication inside the AWS network.
+
+Example:
+
+172.31.5.115
+
+You may see:
+
+hostname -I
+
+Output:
+
+172.31.5.115
+Public IPv4
+
+Used to access the EC2 instance from the internet.
+
+Example:
+
+52.66.251.127
+
+You can use it from your browser:
+
+http://52.66.251.127
+6. Public vs Private IP
+
+Simple example:
+
+Internet
+   |
+   | Public IP
+   ↓
+EC2
+   |
+   | Private IP
+   ↓
+Other AWS resources
+Public IP
+
+Used for:
+
+Internet → EC2
+Private IP
+
+Used for:
+
+EC2 → EC2
+EC2 → Database
+EC2 → Internal services
+7. Elastic IP
+
+An Elastic IP is a static public IPv4 address.
+
+Normally, an EC2 public IP can change after stopping and starting the instance.
+
+Elastic IP gives you a persistent public IP.
+
+Example:
+
+EC2
+ ↓
+Elastic IP
+ ↓
+Internet
+
+Useful when hosting production applications.
+
+8. Internet Gateway
+IGW = Internet Gateway
+
+It allows communication between your VPC and the internet.
+
+Basic flow:
+
+Internet
+    |
+    ↓
+Internet Gateway
+    |
+    ↓
+VPC
+    |
+    ↓
+Subnet
+    |
+    ↓
+EC2
+
+Without proper routing through an Internet Gateway, a public subnet cannot provide normal internet access to an EC2 instance.
+
+9. Route Table
+
+A route table tells AWS:
+
+"Where should network traffic go?"
+
+Example:
+
+Destination       Target
+0.0.0.0/0         Internet Gateway
+
+Meaning:
+
+Any destination
+     ↓
+Internet Gateway
+
+0.0.0.0/0 means all IPv4 destinations.
+
+10. Security Group
+
+This is extremely important.
+
+A Security Group acts like a virtual firewall for your EC2 instance.
+
+Example:
+
+Internet
+   |
+   ↓
+Security Group
+   |
+   ↓
+EC2
+
+You define which ports can receive traffic.
+
+Example inbound rules:
+
+Type	Port	Purpose
+SSH	22	Remote Linux login
+HTTP	80	Website
+HTTPS	443	Secure website
+Custom TCP	8000	Python test server
+11. Important Ports
+
+Remember these:
+
+22    → SSH
+80    → HTTP
+443   → HTTPS
+8000  → Common development server
+8080  → Common application server
+3000  → Common Node/React development server
+5000  → Common application server
+
+For example:
+
+Browser
+   |
+   | HTTP :80
+   ↓
+Nginx
+
+And:
+
+Nginx
+   |
+   | :8000
+   ↓
+Python application
+12. SSH
+SSH = Secure Shell
+
+SSH allows you to remotely access your Linux EC2 server.
+
+Example:
+
+ssh -i "sample.pem" ubuntu@52.66.251.127
+
+Meaning:
+
+ssh
+ ↓
+Secure connection
+
+-i sample.pem
+ ↓
+Private key
+
+ubuntu
+ ↓
+Linux username
+
+52.66.251.127
+ ↓
+EC2 public IP
+
+In your case, you are using MobaXterm as the SSH client.
+
+13. Linux Networking Commands
+
+Once connected to EC2, useful commands include:
+
+Check IP
+ip addr
+
+or:
+
+hostname -I
+Check hostname
+hostname
+Check routes
+ip route
+
+Example:
+
+default via 172.31.0.1 dev ens5
+Test internet
+ping -c 4 google.com
+Check listening ports
+sudo ss -tulpn
+
+Example:
+
+LISTEN 0 511 0.0.0.0:80
+
+This means something is listening on port 80.
+
+14. What is a Web Server?
+
+A web server receives HTTP requests and returns responses.
+
+Example:
+
+Browser
+   |
+   | GET /
+   ↓
+Web Server
+   |
+   ↓
+index.html
+   |
+   ↓
+Browser
+
+Popular web servers:
+
+Nginx
+Apache
+
+We are going to use Nginx.
+
+15. What is Nginx?
+
+Nginx is a high-performance web server and reverse proxy.
+
+It can:
+
+Serve HTML/CSS/JS
+Act as a reverse proxy
+Load balance applications
+Handle HTTP/HTTPS
+Forward requests to backend applications
+
+Basic architecture:
+
+Browser
+   |
+   ↓
+Nginx
+   |
+   ↓
+Application
+16. Install Nginx on Ubuntu EC2
+
+First update packages:
+
+sudo apt update
+
+Install Nginx:
+
+sudo apt install nginx -y
+
+Check status:
+
+sudo systemctl status nginx
+
+You should see something similar to:
+
+Active: active (running)
+17. Start Nginx
+
+If it isn't running:
+
+sudo systemctl start nginx
+
+Restart:
+
+sudo systemctl restart nginx
+
+Enable at system startup:
+
+sudo systemctl enable nginx
+18. Test Nginx
+
+From EC2:
+
+curl http://localhost
+
+You should receive HTML from Nginx's default page.
+
+You can also open:
+
+http://YOUR_EC2_PUBLIC_IP
+
+in your browser.
+
+19. Allow HTTP in AWS Security Group
+
+Go to:
+
+EC2
+ ↓
+Security Groups
+ ↓
+Inbound Rules
+ ↓
+Edit Inbound Rules
+
+Add:
+
+Type: HTTP
+Port: 80
+Source: 0.0.0.0/0
+
+Now:
+
+Internet
+   ↓
+Port 80
+   ↓
+Security Group
+   ↓
+EC2
+   ↓
+Nginx
+20. Where is Nginx Configuration?
+
+The important default configuration file is:
+
+/etc/nginx/sites-available/default
+
+Open it:
+
+sudo vim /etc/nginx/sites-available/default
+
+or:
+
+sudo nano /etc/nginx/sites-available/default
+21. Understanding the Default Configuration
+
+You will see something similar to:
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+Let's understand it.
+
+22. listen 80
+listen 80;
+
+Means:
+
+Nginx listens for HTTP requests on port 80.
+
+Flow:
+
+Browser
+   |
+   | :80
+   ↓
+Nginx
+23. root
+root /var/www/html;
+
+This tells Nginx where website files are located.
+
+For example:
+
+/var/www/html
+    |
+    ├── index.html
+    ├── style.css
+    └── script.js
+24. index
+index index.html;
+
+This tells Nginx the default page.
+
+When someone visits:
+
+http://52.66.251.127/
+
+Nginx looks for:
+
+index.html
+25. server_name
+server_name _;
+
+_ is commonly used as a catch-all/default server name.
+
+Later you can use an actual domain:
+
+server_name example.com;
+26. location /
+location / {
+}
+
+This defines how Nginx handles requests beginning with /.
+
+Example:
+
+http://example.com/
+
+matches:
+
+location /
+27. What is Reverse Proxy?
+
+This is the most important topic.
+
+A reverse proxy receives the client's request and forwards it to another server/application.
+
+Without reverse proxy:
+
+Browser
+   |
+   ↓
+:8000
+   |
+   ↓
+Python Server
+
+With reverse proxy:
+
+Browser
+   |
+   ↓
+:80
+   |
+   ↓
+Nginx
+   |
+   ↓
+:8000
+   |
+   ↓
+Python Server
+
+The user only sees:
+
+http://YOUR_PUBLIC_IP
+
+They don't need to specify:
+
+:8000
+28. Why Use Reverse Proxy?
+
+Suppose your application runs on:
+
+127.0.0.1:8000
+
+You don't necessarily want users directly accessing that application port.
+
+Instead:
+
+Internet
+   ↓
+Nginx :80
+   ↓
+Application :8000
+
+Benefits include:
+
+Hide backend port
+Centralize HTTP handling
+SSL/TLS termination
+Routing
+Load balancing
+Security
+Multiple applications on one server
+29. Our Practical Example
+
+Suppose we have:
+
+index.html
+
+We start a simple Python web server:
+
+python3 -m http.server 8000
+
+Now the application is available at:
+
+http://localhost:8000
+
+Test:
+
+curl http://localhost:8000
+30. Start Python Server
+
+Go to the directory containing index.html.
+
+Example:
+
+cd /var/www/html
+
+Check:
+
+ls
+
+You should see:
+
+index.html
+
+Start Python:
+
+python3 -m http.server 8000
+
+Output:
+
+Serving HTTP on 0.0.0.0 port 8000 ...
+31. Test Python Server
+
+From another SSH terminal, run:
+
+curl http://localhost:8000
+
+You should receive the HTML content.
+
+Important:
+
+localhost:8000
+
+means the application is running on the EC2 machine.
+
+32. Configure Nginx Reverse Proxy
+
+Open:
+
+sudo vim /etc/nginx/sites-available/default
+
+Use this configuration:
+
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        root /var/www/html;
+
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location / {
+                proxy_pass http://127.0.0.1:8000;
+
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }
+}
+33. Understanding proxy_pass
+
+This is the key line:
+
+proxy_pass http://127.0.0.1:8000;
+
+It means:
+
+Forward the request received by Nginx to port 8000 on the same machine.
+
+Flow:
+
+Client
+  |
+  | HTTP :80
+  ↓
+Nginx
+  |
+  | proxy_pass
+  ↓
+127.0.0.1:8000
+  |
+  ↓
+Python Server
+34. Understanding Proxy Headers
+Host
+proxy_set_header Host $host;
+
+Passes the original host name to the backend.
+
+Real IP
+proxy_set_header X-Real-IP $remote_addr;
+
+Passes the client's IP address.
+
+Forwarded For
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+Maintains the proxy chain/client IP information.
+
+Protocol
+proxy_set_header X-Forwarded-Proto $scheme;
+
+Tells the backend whether the original request used:
+
+http
+
+or:
+
+https
+35. Vim: Save Configuration
+
+If using Vim:
+
+Enter editing mode
+i
+
+Paste the configuration.
+
+Then press:
+
+Esc
+
+Save and exit:
+
+:wq
+
+Press:
+
+Enter
+36. Test Nginx Configuration
+
+Always test before restarting Nginx.
+
+sudo nginx -t
+
+Successful output should contain:
+
+syntax is ok
+test is successful
+
+If there is an error, don't restart until you fix it.
+
+37. Restart Nginx
+sudo systemctl restart nginx
+
+Check:
+
+sudo systemctl status nginx
+
+You want:
+
+Active: active (running)
+38. Final Architecture
+
+Your final setup looks like:
+
+                  INTERNET
+                      |
+                      |
+               Public IP
+                      |
+                      |
+                 Port 80
+                      |
+                      ↓
+             ┌────────────────┐
+             │     NGINX      │
+             │ Reverse Proxy  │
+             └────────────────┘
+                      |
+                      |
+             proxy_pass
+                      |
+                      ↓
+             127.0.0.1:8000
+                      |
+                      ↓
+             ┌────────────────┐
+             │ Python Server  │
+             └────────────────┘
+                      |
+                      ↓
+                 index.html
+39. Browser Request Flow
+
+When you type:
+
+http://52.66.251.127
+
+the request goes:
+
+1. Browser
+      ↓
+2. EC2 Public IP
+      ↓
+3. Security Group
+      ↓
+4. Port 80
+      ↓
+5. Nginx
+      ↓
+6. proxy_pass
+      ↓
+7. 127.0.0.1:8000
+      ↓
+8. Python server
+      ↓
+9. index.html
+      ↓
+10. Response to browser
+40. Why Don't We Use :8000 in Browser?
+
+Without Nginx:
+
+http://52.66.251.127:8000
+
+With Nginx:
+
+http://52.66.251.127
+
+Because:
+
+Browser → :80 → Nginx → :8000
+
+The backend port is hidden from the user.
+
+41. Important Difference: Forward Proxy vs Reverse Proxy
+Forward Proxy
+
+Proxy works on behalf of the client.
+
+Client
+  ↓
+Forward Proxy
+  ↓
+Internet
+Reverse Proxy
+
+Proxy works on behalf of the server/application.
+
+Client
+  ↓
+Reverse Proxy
+  ↓
+Backend Server
+
+Nginx in our example is a:
+
+Reverse Proxy
+
+42. Common Commands Cheat Sheet
+EC2/Linux
+pwd
+ls
+cd
+mkdir
+touch
+cat
+clear
+Networking
+ip addr
+hostname -I
+ip route
+ping -c 4 google.com
+ss -tulpn
+Nginx
+sudo apt update
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl stop nginx
+sudo systemctl restart nginx
+sudo systemctl status nginx
+sudo systemctl enable nginx
+sudo nginx -t
+Configuration
+sudo vim /etc/nginx/sites-available/default
+Python test server
+python3 -m http.server 8000
+Test locally
+curl http://localhost:8000
+43. Troubleshooting
+Problem 1: Nginx doesn't start
+
+Run:
+
+sudo nginx -t
+
+If there is a syntax error, fix the configuration.
+
+Then:
+
+sudo systemctl restart nginx
+Problem 2: Browser shows "Connection timed out"
+
+Check AWS Security Group.
+
+Make sure:
+
+HTTP
+TCP
+80
+0.0.0.0/0
+
+is allowed.
+
+Problem 3: Nginx works but backend doesn't
+
+Check:
+
+curl http://localhost:8000
+
+If this fails, your Python server isn't running correctly.
+
+Start:
+
+python3 -m http.server 8000
+Problem 4: Port 8000 is already in use
+
+Check:
+
+sudo ss -tulpn | grep 8000
+Problem 5: Nginx gives 502 Bad Gateway
+
+Usually this means:
+
+Nginx
+  ↓
+127.0.0.1:8000
+  X
+Backend unavailable
+
+Check:
+
+curl http://127.0.0.1:8000
+
+and make sure your backend is running.
+
+44. One-Minute Revision
+
+Remember this architecture:
+
+VPC
+ ↓
+Subnet
+ ↓
+EC2
+ ↓
+Security Group
+ ↓
+Port 80
+ ↓
+Nginx
+ ↓
+Reverse Proxy
+ ↓
+127.0.0.1:8000
+ ↓
+Application
+Most important concepts
+Concept	Meaning
+EC2	Virtual server
+VPC	Private AWS network
+Subnet	Network inside VPC
+Public IP	Internet-accessible IP
+Private IP	Internal AWS IP
+Security Group	Virtual firewall
+Port 22	SSH
+Port 80	HTTP
+Port 443	HTTPS
+Nginx	Web server/reverse proxy
+Reverse Proxy	Forwards client requests to backend
+proxy_pass	Nginx directive used to forward requests
+127.0.0.1	This same machine
+8000	Backend application port in our example
+The key configuration to remember
+location / {
+        proxy_pass http://127.0.0.1:8000;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+}
